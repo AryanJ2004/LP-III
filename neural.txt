@@ -1,0 +1,99 @@
+# Install dependencies if running in Colab
+!pip install pandas numpy scikit-learn tensorflow matplotlib seaborn
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.metrics import classification_report, confusion_matrix
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+
+# ======================
+# 1. Load the dataset
+# ======================
+# If using Kaggle, you need to download and upload the file to Colab or mount Google Drive
+# Here, assume the file is in the same directory
+df = pd.read_csv("/content/drive/MyDrive/LP-III/Program/Group B3 NN/Churn_Modelling.csv")
+
+print(df.head())
+print(df.info())
+
+# ======================
+# 2. Preprocessing
+# ======================
+
+# Drop unnecessary columns
+df = df.drop(['RowNumber', 'CustomerId', 'Surname'], axis=1)
+
+# Encode categorical variables
+label_encoder_geo = LabelEncoder()
+label_encoder_gender = LabelEncoder()
+
+df['Geography'] = label_encoder_geo.fit_transform(df['Geography'])
+df['Gender'] = label_encoder_gender.fit_transform(df['Gender'])
+
+# Features (X) and target (y)
+X = df.drop('Exited', axis=1)
+y = df['Exited']
+
+# Standardize features
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# ======================
+# 3. Train-Test Split
+# ======================
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# ======================
+# 4. Build Neural Network
+# ======================
+model = Sequential()
+model.add(Dense(16, input_dim=X_train.shape[1], activation='relu'))
+model.add(Dropout(0.3))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))  # Binary classification
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# ======================
+# 5. Train Model
+# ======================
+history = model.fit(X_train, y_train, validation_split=0.2, epochs=50, batch_size=32, verbose=1)
+
+# ======================
+# 6. Evaluate Model
+# ======================
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f"Test Accuracy: {accuracy:.4f}")
+
+# Predictions
+y_pred = (model.predict(X_test) > 0.5).astype("int32")
+
+# Classification report
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Confusion Matrix")
+plt.show()
+
+# ======================
+# 7. Plot Training History
+# ======================
+plt.figure(figsize=(8,5))
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.title('Training History')
+plt.show()
