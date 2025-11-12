@@ -34,8 +34,20 @@ void fractknapsack(vector<int> &val, vector<int> &wt, double W){
 
 
 int main(){
-    vector<int> val = {60, 100, 120};
-    vector<int> wt = {10, 20, 30};
-    double W = 50;
+    // vector<int> val = {60, 100, 120};
+    // vector<int> wt = {10, 20, 30};
+    // double W = 50;
+    int W;
+    cout<<"Enter Capacity Of Bag"<<endl;
+    cin>>W;
+    int n; cout<<"Enter No. Of Weight Readings"<<endl;
+    cin>>n;
+    vector<int>val(n);
+    vector<int>wt(n); 
+    cout<<"Enter Value And Weight"<<endl;
+    for(int i=0;i<n;i++){
+        cin>>val[i]>>wt[i];
+    }
+    cout<<"Maximum Profit:";
     fractknapsack(val, wt, W);
 }
